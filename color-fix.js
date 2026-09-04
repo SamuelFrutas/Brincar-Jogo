@@ -1,13 +1,21 @@
-// Correção do Jogo das Cores: cada resposta é um botão preenchido exatamente com a cor do nome.
+// Correção visual do Jogo das Cores.
+// Os botões mostram o nome correto e ficam preenchidos com a própria cor.
 (function(){
-  const originalOptions = window.options;
-  window.options = function(){
-    if(window.state && window.state.game === 'colors'){
-      const d = window.data();
-      const n = window.difficulty();
-      return window.shuffle([d,...window.shuffle(window.games.colors.rounds.filter(x=>x[1]!==d[1])).slice(0,n-1)])
-        .map(x=>({emoji:x[0],label:x[1],key:x[1],color:x[2]}));
+  const colors={VERMELHO:'#ef4444',AZUL:'#3b82f6',AMARELO:'#facc15',VERDE:'#22c55e',ROXO:'#a855f7',LARANJA:'#f97316',ROSA:'#ec4899',PRETO:'#111827',BRANCO:'#ffffff',MARROM:'#92400e'};
+  const originalRender=window.render;
+  window.render=function(){
+    originalRender();
+    if(window.location && document.getElementById('options')){
+      document.querySelectorAll('.colors-option').forEach(function(b){
+        const nome=b.textContent.trim().toUpperCase();
+        if(colors[nome]){
+          b.style.background=colors[nome];
+          b.style.backgroundColor=colors[nome];
+          b.style.color=(nome==='AMARELO'||nome==='BRANCO')?'#222':'#fff';
+          b.style.border='5px solid #fff';
+          b.style.textShadow='none';
+        }
+      });
     }
-    return originalOptions();
   };
 })();
