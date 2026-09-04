@@ -1,11 +1,11 @@
-/* Garante que uma fala terminou de verdade antes de a próxima começar. */
+/* Garante que uma fala termine de verdade antes da próxima pergunta. */
 (function(){
-  const originalSpeak = window.speak;
-  if(typeof originalSpeak !== 'function') return;
+  let generation = 0;
 
   window.speak = function(text){
-    if(!window.state || !state.sound || !window.speechSynthesis) return Promise.resolve();
+    if(typeof state === 'undefined' || !state.sound || !window.speechSynthesis) return Promise.resolve();
 
+    const myGeneration = ++generation;
     speechSynthesis.cancel();
     state.speaking = true;
 
@@ -14,39 +14,34 @@
       u.lang = 'pt-BR';
       u.rate = .84;
       u.pitch = 1.1;
-
       let finished = false;
       let endSeen = false;
       let stableChecks = 0;
 
       const finish = ()=>{
-        if(finished) return;
+        if(finished || myGeneration !== generation) return;
         finished = true;
         state.speaking = false;
         resolve();
       };
 
       const check = ()=>{
-        if(finished) return;
+        if(finished || myGeneration !== generation) return;
         if(endSeen && !speechSynthesis.speaking && !speechSynthesis.pending){
           stableChecks++;
           if(stableChecks >= 4){
             setTimeout(finish, 450);
             return;
           }
-        } else {
+        }else{
           stableChecks = 0;
         }
-        setTimeout(check, 100);
+        setTimeout(check,100);
       };
 
-      u.onend = ()=>{ endSeen = true; check(); };
-      u.onerror = ()=>{ endSeen = true; check(); };
-
+      u.onend = ()=>{if(myGeneration !== generation)return;endSeen=true;check()};
+      u.onerror = ()=>{if(myGeneration !== generation)return;endSeen=true;check()};
       speechSynthesis.speak(u);
-      setTimeout(()=>{
-        if(!endSeen && !speechSynthesis.speaking && !speechSynthesis.pending) finish();
-      }, 1000);
     });
   };
 })();
