@@ -30,11 +30,10 @@ function speak(text){
   speechSynthesis.cancel();state.speaking=true;
   return new Promise(resolve=>{
     const u=new SpeechSynthesisUtterance(text);u.lang='pt-BR';u.rate=.84;u.pitch=1.1;
-    let done=false;const end=()=>{if(done)return;done=true;state.speaking=false;resolve()};
-    u.onend=end;u.onerror=end;speechSynthesis.speak(u);
-    // Do not cut the last word on slower phones/voices. The previous 2.5s timeout
-    // could fire while the utterance was still saying the answer (e.g. "uma maçã").
-    setTimeout(end,Math.max(6000,text.length*170));
+    let done=false;
+    const end=()=>{if(done)return;done=true;state.speaking=false;resolve()};
+    u.onend=end;u.onerror=end;
+    speechSynthesis.speak(u);
   });
 }
 
